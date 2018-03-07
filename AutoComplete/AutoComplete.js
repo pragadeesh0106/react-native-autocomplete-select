@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { TouchableHighlight, Text, TextInput, View, ListView, ScrollView, TouchableOpacity } from 'react-native'
 import stringScore from 'string_score'
-import Styles from './Styles'
+// import Styles from './Styles'
 import PropTypes from 'prop-types'
 import { Card, WhiteSpace, Button } from 'antd-mobile';
 import FontAwesome, { Icons } from 'react-native-fontawesome';
@@ -32,7 +32,6 @@ class AutoComplete extends Component {
       textValue: textValue
     })
   }
-
   renderList = () => {
 
     return (
@@ -40,11 +39,14 @@ class AutoComplete extends Component {
         <Card style={{
           position: 'absolute',
           width: '100%',
-          top: -10,
-          zIndex: 4
+          top: 0,
+          zIndex: 9
         }} >
           <Card.Body>
-            <ScrollView>
+            <View>
+              <View>
+                <TextInput />
+              </View>
               {this.state.listData ?
                 <ListView
                   dataSource={this.state.listData}
@@ -65,7 +67,7 @@ class AutoComplete extends Component {
                     </View>)}
                 />
                 : <View />}
-            </ScrollView>
+            </View>
           </Card.Body>
         </Card>
       </View>
@@ -74,33 +76,32 @@ class AutoComplete extends Component {
 
   render() {
     return (
-      <View >
+      <View>
         <TouchableOpacity onPress={() => {
           this.setState({
-            list: true
+            list: this.state.list ? false : true
           })
         }}>
           <View style={{
             position: 'relative',
             flexDirection: 'row',
-            flexWrap: 'wrap',
+            borderBottomColor: 'gray',
+            borderBottomWidth: 1,
           }}>
             <View style={{ flex: 3 }}>
-              <Text style={{ borderBottomColor: 'gray', borderBottomWidth: 1, marginLeft: 5, padding: 5 }} >
+              <Text style={{ marginLeft: 5, padding: 5, paddingBottom: 0 }} >
                 {this.state.textValue}
               </Text>
             </View>
-            <View style={{ flex: 1, alignSelf: 'flex-end', }}>
+            <View style={{ flex: 1 }}>
               {this.state.list ?
-                <Text style={{ margin: 10, fontSize: 15, textAlign: 'left' }}>
-                  <FontAwesome>{Icons.chevronLeft}</FontAwesome>
-                  Text
-              </Text>
+                <Text style={{ margin: 10, fontSize: 15, textAlign: 'right' }}>
+                  <FontAwesome>{Icons.chevronUp}</FontAwesome>
+                </Text>
                 :
-                <Text style={{ margin: 10, fontSize: 15, textAlign: 'left' }}>
-                  <FontAwesome>{Icons.chevronLeft}</FontAwesome>
-                  Text
-                              </Text>
+                <Text style={{ margin: 10, fontSize: 15, textAlign: 'right' }}>
+                  <FontAwesome>{Icons.chevronDown}</FontAwesome>
+                </Text>
               }
             </View>
           </View>
