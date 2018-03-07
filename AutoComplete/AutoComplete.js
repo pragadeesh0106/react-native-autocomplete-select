@@ -1,139 +1,120 @@
 import React, { Component } from 'react'
-import { TouchableHighlight, Text, TextInput, View } from 'react-native'
+import { TouchableHighlight, Text, TextInput, View, ListView, ScrollView, TouchableOpacity } from 'react-native'
 import stringScore from 'string_score'
 import Styles from './Styles'
+import PropTypes from 'prop-types'
+import { Card, WhiteSpace, Button } from 'antd-mobile';
+import FontAwesome, { Icons } from 'react-native-fontawesome';
+
+const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
 
 class AutoComplete extends Component {
-  componentDidMount () {
-    this.suggestions = this.filterSugestions(
-      this.props.suggestions, this.props.value
-    )
-  }
 
-  componentWillUpdate (nextProps, nextState) {
-    this.suggestions = this.filterSugestions(
-      nextProps.suggestions, nextProps.value
-    )
-  }
-
-  getSuggestionText = (suggestion) => {
-    if (this.props.suggestionObjectTextProperty) {
-      return suggestion[this.props.suggestionObjectTextProperty]
-    }
-
-    return suggestion
-  }
-
-  isSimilar = (value, suggestionText) => {
-    const suggestionScore = stringScore(
-      suggestionText, value, this.props.comparationFuzziness
-    )
-
-    return suggestionScore >= this.props.minimumSimilarityScore
-  }
-
-  shouldFilterSuggestions = (newSuggestions, value) => {
-    return newSuggestions && newSuggestions.length &&
-      value && !this.selectedSuggestion
-  }
-
-  filterSugestions = (newSuggestions, value) => {
-    if (!this.shouldFilterSuggestions(newSuggestions, value)) {
-      return {}
-    }
-
-    return newSuggestions.reduce((suggestions, suggestion) => {
-      const suggestionText = this.getSuggestionText(suggestion)
-
-      if (!suggestionText || !this.isSimilar(value, suggestionText)) {
-        return suggestions
-      }
-
-      suggestions[suggestionText] = suggestion
-      return suggestions
-    }, {})
-  }
-
-  onChangeText = (value) => {
-    this.selectedSuggestion = false
-
-    if (this.props.onChangeText) {
-      this.props.onChangeText(value)
+  constructor(props) {
+    super(props);
+    this.state = {
+      list: false,
     }
   }
 
-  suggestionClick = (suggestion) => () => {
-    this.selectedSuggestion = true
-    this.suggestions = {}
-    this.props.onSelect(suggestion)
+  componentDidMount() {
+    if (this.props && this.props.data.length > 0) {
+      this.setState({
+        initial: true,
+        listData: ds.cloneWithRows(this.props.data),
+        textValue: this.props.value ? this.props.data.filter(data => data.value === this.props.value)[0].text : ''
+      })
+    }
+  }
+  onSelect(value) {
+    const textValue = this.props.data.filter(data => data.value === value)[0].text;
+    this.setState({
+      textValue: textValue
+    })
   }
 
-  renderSuggestions = () => {
-    const suggestionTexts = Object.keys(this.suggestions || {})
-
-    if (!suggestionTexts.length) {
-      return null
-    }
+  renderList = () => {
 
     return (
-      <View
-        style={this.props.suggestionsWrapperStyle || Styles.suggestionsWrapper}
-      >
-        {
-          suggestionTexts.map((text, index) => (
-            <TouchableHighlight
-              key={index}
-              suggestionText={text}
-              activeOpacity={0.6}
-              style={this.props.suggestionStyle || Styles.suggestion}
-              onPress={this.suggestionClick(this.suggestions[text])}
-              underlayColor='white'
-            >
-              <Text
-                style={this.props.suggestionTextStyle || Styles.suggestionText}
-              >
-                {text}
+      <View>
+        <Card style={{
+          position: 'absolute',
+          width: '100%',
+          top: -10,
+          zIndex: 4
+        }} >
+          <Card.Body>
+            <ScrollView>
+              {this.state.listData ?
+                <ListView
+                  dataSource={this.state.listData}
+                  onClick={(item) => this.onSelect.bind(this, item.value)}
+                  renderRow={(rowData) =>
+                    (<View
+                      style={{
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                        paddingLeft: 15,
+                        paddingRight: 15,
+                        borderBottomColor: '#ccc',
+                        borderBottomWidth: 1
+                      }}>
+                      <Text>
+                        {rowData.text}
+                      </Text>
+                    </View>)}
+                />
+                : <View />}
+            </ScrollView>
+          </Card.Body>
+        </Card>
+      </View>
+    )
+  }
+
+  render() {
+    return (
+      <View >
+        <TouchableOpacity onPress={() => {
+          this.setState({
+            list: true
+          })
+        }}>
+          <View style={{
+            position: 'relative',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+          }}>
+            <View style={{ flex: 3 }}>
+              <Text style={{ borderBottomColor: 'gray', borderBottomWidth: 1, marginLeft: 5, padding: 5 }} >
+                {this.state.textValue}
               </Text>
-            </TouchableHighlight>
-          ))
+            </View>
+            <View style={{ flex: 1, alignSelf: 'flex-end', }}>
+              {this.state.list ?
+                <Text style={{ margin: 10, fontSize: 15, textAlign: 'left' }}>
+                  <FontAwesome>{Icons.chevronLeft}</FontAwesome>
+                  Text
+              </Text>
+                :
+                <Text style={{ margin: 10, fontSize: 15, textAlign: 'left' }}>
+                  <FontAwesome>{Icons.chevronLeft}</FontAwesome>
+                  Text
+                              </Text>
+              }
+            </View>
+          </View>
+        </TouchableOpacity >
+        {
+          this.state.list ?
+            this.renderList()
+            : <View style={{
+              position: 'absolute'
+            }} />
         }
       </View>
     )
   }
-
-  render () {
-    return (
-      <View style={this.props.style || Styles.wrapper}>
-        <TextInput
-          {...this.props}
-          onChangeText={this.onChangeText}
-          style={this.props.inputStyle || Styles.input}
-        />
-
-        {this.renderSuggestions()}
-      </View>
-    )
-  }
-}
-
-AutoComplete.propTypes = {
-  suggestions: React.PropTypes.array,
-  value: React.PropTypes.string,
-  minimumSimilarityScore: React.PropTypes.number,
-  comparationFuzziness: React.PropTypes.number,
-  suggestionObjectTextProperty: React.PropTypes.string,
-  onChangeText: React.PropTypes.func,
-  onSelect: React.PropTypes.func.isRequired,
-  suggestionsWrapperStyle: React.PropTypes.any,
-  suggestionStyle: React.PropTypes.any,
-  suggestionTextStyle: React.PropTypes.any,
-  style: React.PropTypes.any,
-  inputStyle: React.PropTypes.any
-}
-
-AutoComplete.defaultProps = {
-  minimumSimilarityScore: 0.6,
-  comparationFuzziness: 0.5
 }
 
 export default AutoComplete

@@ -20,8 +20,11 @@
   "author": "Thiago Porto",
   "license": "MIT",
   "dependencies": {
+    "antd-mobile": "^2.1.6",
+    "lodash": "^4.17.5",
     "react": ">=15.4.1",
     "react-native": ">=0.38.0",
+    "react-native-fontawesome": "^5.7.0",
     "string_score": "git+https://github.com/ThiagoNP/string_score.git"
   },
   "devDependencies": {
